@@ -19,12 +19,12 @@ require 'vendor/autoload.php';
 $sender = Sender::getInstance();
 try {
     $config = [
-            'merchantId' => 'xxx',
-            'password' => 'xxxx'
-        ];
+        'merchantId' => 'xxx',
+        'password' => 'xxxx'
+    ];
     $pay = new Paystation($config);
     $pay->setPaymentParams([
-        'invoice_number' => uniqid('ddsf', true),
+        'invoice_number' => 'XXXXXXXXXXXX',
         'currency' => "BDT",
         'payment_amount' => 1,
         'reference' => "102030",
@@ -32,8 +32,8 @@ try {
         'cust_phone' => "01700000001",
         'cust_email' => "max@gmail.com",
         'cust_address' => "Dhaka, Bangladesh",
-        'callback_url' => "http://example/success.php",
-        'checkout_items' => "orderItems" //optional
+        'callback_url' => "http://www.yourdomain.com/success.php",
+        // 'checkout_items' => "orderItems"
     ]);
     $pay->payNow();
 } catch (Exception $e) {
