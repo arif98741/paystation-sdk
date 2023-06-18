@@ -1,10 +1,10 @@
-xenon/multisms is a universal sms sending library specially for Bangladesh. <br> You can integrate this library in your php application easily for sending sms to any Bangladeshi mobile number. <strong>This is for raw php as well.</strong>
+xenon/paystation is a php library for Bangladeshi  payment gateway provider. You can integrate this in your php application and get customer payment using mfs, credit card and so on 
 
 
 ### Installation
 
 ```
-composer require xenon/multisms
+composer require xenon/paystation
 ```
 
 ### Sample Code
@@ -22,20 +22,20 @@ try {
             'merchantId' => 'xxx',
             'password' => 'xxxx'
         ];
-        $pay = new Paystation($config);
-        $pay->setPaymentParams([
-            'invoice_number' => uniqid('ddsf', true),
-            'currency' => "BDT",
-            'payment_amount' => 1,
-            'reference' => "102030",
-            'cust_name' => "Jhon Max",
-            'cust_phone' => "01700000001",
-            'cust_email' => "max@gmail.com",
-            'cust_address' => "Dhaka, Bangladesh",
-            'callback_url' => "http://www.yourdomain.com/success.php",
-            // 'checkout_items' => "orderItems"
-        ]);
-        $pay->payNow();
+    $pay = new Paystation($config);
+    $pay->setPaymentParams([
+        'invoice_number' => uniqid('ddsf', true),
+        'currency' => "BDT",
+        'payment_amount' => 1,
+        'reference' => "102030",
+        'cust_name' => "Jhon Max",
+        'cust_phone' => "01700000001",
+        'cust_email' => "max@gmail.com",
+        'cust_address' => "Dhaka, Bangladesh",
+        'callback_url' => "http://example/success.php",
+        'checkout_items' => "orderItems" //optional
+    ]);
+    $pay->payNow();
 } catch (Exception $e) {
     var_dump($e->getMessage());
 }
@@ -43,14 +43,10 @@ try {
 </pre>
 
 
-#### Currently Supported SMS Gateways
-* BDBulkSMS
-* BulkSMSBD
-* MDLSMS
-* OnnoRokomSMS
-* SSLSms
-* MIMSMS
+#### Important Methods
+* setPaymentParams()
+* payNow()
 
- We are continuously working in this open source library for adding more Bangladeshi sms gateway. If you fee something is missing then make a issue regarding that.
-If you want to contribute in this library, then you are highly welcome to do that.
+This library is still in beta version and if you are interested to contribute this , we highly encourage you. Make a fork of this repository
+and give send a pull request. If you face any issues or error during development or after deployment, you should crate an issue
 
