@@ -70,7 +70,7 @@ class PaystationPaymentRequest
     {
         return new Client([
             'base_uri' => $baseUrl,
-            'timeout' => 2.0,
+            'timeout' => 10.0,
         ]);
     }
 

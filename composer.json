@@ -1,6 +1,6 @@
 {
     "name": "xenon/paystation",
-    "description": "This is a payment gateway library for paystation",
+    "description": "Paystation is a php library for Bangladeshi payment gateway provider. You can integrate this in your php application and get customer payment using mfs, credit card and so on",
     "type": "library",
     "license": "MIT",
     "authors": [
@@ -9,7 +9,6 @@
             "email": "arif98741@gmail.com"
         }
     ],
-    "minimum-stability": "stable",
     "require": {
         "guzzlehttp/guzzle": "^6.3|^7.2",
         "php": ">=7.3",
@@ -21,7 +20,7 @@
             "Xenon\\Paystation\\": "src/"
         }
     },
-    "description": "Paystation is a php library for Bangladeshi payment gateway provider. You can integrate this in your php application and get customer payment using mfs, credit card and so on",
+    "minimum-stability": "stable",
     "keywords": [
         "paystation",
         "nagad",

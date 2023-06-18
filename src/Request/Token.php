@@ -15,6 +15,7 @@ class Token
             'merchantId' => $config['merchantId'],
             'password' => $config['password'],
         ]);
+
         $responseArray = (new Response($response))->getArrayResponse();
         return $responseArray['token'];
     }
