@@ -6,4 +6,5 @@ vendor
 *.iml
 index.php
 work
-
+tests
+composer.lock

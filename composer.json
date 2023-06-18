@@ -12,9 +12,9 @@
     "minimum-stability": "stable",
     "require": {
         "guzzlehttp/guzzle": "^6.3|^7.2",
+        "php": ">=7.3",
         "ext-curl": "*",
-        "ext-mbstring": "*",
-        "php": ">=7.3"
+        "ext-mbstring": "*"
     },
     "autoload": {
         "psr-4": {
@@ -25,7 +25,5 @@
 
     },
     "require-dev": {
-        "filp/whoops": "^2.7@dev",
-        "league/booboo": "dev-master"
     }
 }

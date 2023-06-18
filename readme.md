@@ -10,19 +10,32 @@ composer require xenon/multisms
 ### Sample Code
 
 <pre>
-use Xenon\Multisms\Provider\BulkSmsBD;
-use Xenon\Multisms\Sender;
+
+use Xenon\Paystation\Exception\PaystationPaymentParameterException;
+use Xenon\Paystation\Paystation;
 
 require 'vendor/autoload.php';
 
 $sender = Sender::getInstance();
 try {
-    $response = $sender->selectProvider(BulkSmsBD::class)
-            ->setConfig(['username' => '017555XYZAB', 'password' => 'XXXXX'])
-            ->setMessage('hello')
-            ->setMobile('017XXXXXXX')
-            ->send();
-    var_dump($response);
+    $config = [
+            'merchantId' => 'xxx',
+            'password' => 'xxxx'
+        ];
+        $pay = new Paystation($config);
+        $pay->setPaymentParams([
+            'invoice_number' => uniqid('ddsf', true),
+            'currency' => "BDT",
+            'payment_amount' => 1,
+            'reference' => "102030",
+            'cust_name' => "Jhon Max",
+            'cust_phone' => "01700000001",
+            'cust_email' => "max@gmail.com",
+            'cust_address' => "Dhaka, Bangladesh",
+            'callback_url' => "http://www.yourdomain.com/success.php",
+            // 'checkout_items' => "orderItems"
+        ]);
+        $pay->payNow();
 } catch (Exception $e) {
     var_dump($e->getMessage());
 }
