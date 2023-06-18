@@ -16,7 +16,6 @@ use Xenon\Paystation\Paystation;
 
 require 'vendor/autoload.php';
 
-$sender = Sender::getInstance();
 try {
     $config = [
         'merchantId' => 'xxx',
