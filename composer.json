@@ -21,6 +21,20 @@
             "Xenon\\Paystation\\": "src/"
         }
     },
+    "description": "Paystation is a php library for Bangladeshi payment gateway provider. You can integrate this in your php application and get customer payment using mfs, credit card and so on",
+    "keywords": [
+        "paystation",
+        "nagad",
+        "payment gateway",
+        "api",
+        "nagad payment gateway",
+        "Bangladeshi payment gateway",
+        "nagad php library",
+        "payment gateway",
+        "paystation php sdk",
+        "paystation gateway",
+        "nagad sdk"
+    ],
     "autoload-dev": {
 
     },
