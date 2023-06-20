@@ -17,7 +17,7 @@ class Paystation
     private array $paymentParams = [];
 
     /**
-     * @param array $paymentParams
+     * @param array $config
      */
     public function __construct(array $config)
     {
@@ -44,6 +44,8 @@ class Paystation
     }
 
     /**
+     * @return void
+     * @throws PaystationException
      * @throws PaystationPaymentParameterException
      * @throws \JsonException
      */
@@ -53,6 +55,26 @@ class Paystation
         $this->createPayment();
     }
 
+    /**
+     * This is verification payment for payment
+     * This will accept invoice_number and trx_id as argent parameters
+     * @return \GuzzleHttp\Psr7\Response
+     * @throws \JsonException|PaystationException
+     */
+    public function verifyPayment(string $invoiceNumber, string $transactionId)
+    {
+        $instance = PaystationPaymentRequest::getInstance();
+        $header = [
+            'token' => Token::getToken($this->config),
+        ];
+        $instance->setHeaders($header);
+        $params = [
+            'invoice_number' => $invoiceNumber,
+            'trx_id' => $transactionId
+        ];
+        $requestResponse = $instance->post('retrive-transaction', $header, $params);
+        return (new Response($requestResponse))->getJsonResponse();
+    }
 
     /**
      * @return void
@@ -110,7 +132,6 @@ class Paystation
             }
 
             throw new PaystationPaymentParameterException("Payment  parameter '$requiredParamsString' $string required. For better understanding visit https://www.paystation.com.bd/documentation/#create-request-parameters");
-
         }
     }
 
