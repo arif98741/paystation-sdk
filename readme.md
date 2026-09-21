@@ -6,6 +6,47 @@ xenon/paystation is a php library for Bangladeshi  payment gateway provider. You
 ```
 composer require xenon/paystation
 ```
+
+### Environment (Sandbox / Live)
+
+Paystation runs two separate environments. Pick one with the optional
+`environment` key; omit it and the library talks to the live gateway, as before.
+
+| Environment | Value | Base URL |
+|---|---|---|
+| Sandbox (Test) | `sandbox` | `https://sandbox.paystation.com.bd` |
+| Production (Live) | `live` | `https://api.paystation.com.bd` |
+
+`test`, `testing`, `dev` and `development` are accepted as aliases of `sandbox`;
+`production` and `prod` as aliases of `live`. Matching is case-insensitive and
+ignores surrounding spaces. Anything else throws a `PaystationException`.
+
+<pre>
+$pay = new Paystation([
+    'merchantId' => 'xxx',        // your sandbox credentials
+    'password' => 'xxxx',
+    'environment' => 'sandbox',
+]);
+
+// or switch at runtime
+$pay->setEnvironment('live');
+
+$pay->getEnvironment(); // 'live'
+$pay->getBaseUrl();     // 'https://api.paystation.com.bd'
+$pay->isSandbox();      // false
+</pre>
+
+Sandbox and live credentials are different — Paystation issues each set to you,
+so pass whichever pair matches the environment you selected. `merchantId` and
+`password` are both required; leaving either out throws a `PaystationException`
+when a request is made. Construction itself never throws on missing credentials,
+so binding this class in a container before your config is loaded stays safe.
+
+#### Upgrading
+
+This is a backward compatible addition. Existing code needs no changes — with no
+`environment` key the library talks to the live gateway exactly as it did before.
+
 # Sample Code
 ## Step:1  Create Payment and Redirect to Payment Url
 <pre>
@@ -18,7 +59,8 @@ require 'vendor/autoload.php';
 try {
     $config = [
         'merchantId' => 'xxx',
-        'password' => 'xxxx'
+        'password' => 'xxxx',
+        'environment' => 'sandbox', // omit for live
     ];
     $pay = new Paystation($config);
     $pay->setPaymentParams([
@@ -84,6 +126,10 @@ $status  = $pay->verifyPayment("invoice_number","trx_id"); //this will retrieve 
 * setPaymentParams()
 * payNow()
 * verifyPayment()
+* setEnvironment()
+* getEnvironment()
+* getBaseUrl()
+* isSandbox()
 
 This library is still in beta version and if you are interested to contribute this , we highly encourage you. Make a fork of this repository
 and give send a pull request. If you face any issues or error during development or after deployment, you should crate an issue

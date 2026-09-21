@@ -4,6 +4,7 @@ namespace Xenon\Paystation\Request;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
+use Xenon\Paystation\Environment;
 use Xenon\Paystation\Exception\PaystationException;
 
 class PaystationPaymentRequest
@@ -21,6 +22,36 @@ class PaystationPaymentRequest
     {
         $this->headers = $headers;
 
+    }
+
+    /**
+     * Point this request at a specific host.
+     *
+     * @return $this
+     */
+    public function setBaseUrl(string $baseUrl): self
+    {
+        $this->baseUrl = rtrim($baseUrl, '/');
+        return $this;
+    }
+
+    /**
+     * Point this request at the host belonging to the given environment.
+     *
+     * @return $this
+     * @throws PaystationException
+     */
+    public function setEnvironment(string $environment): self
+    {
+        return $this->setBaseUrl(Environment::baseUrl($environment));
+    }
+
+    /**
+     * @return string
+     */
+    public function getBaseUrl(): string
+    {
+        return $this->baseUrl;
     }
 
     /**
