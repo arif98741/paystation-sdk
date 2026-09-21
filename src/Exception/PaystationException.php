@@ -11,7 +11,7 @@ class PaystationException extends \Exception
      *
      * @return void
      */
-    public function __construct($message, $code = 0, Throwable $previous = null)
+    public function __construct($message, $code = 0, ?Throwable $previous = null)
     {
         // Call the parent constructor
         parent::__construct($message, $code, $previous);
