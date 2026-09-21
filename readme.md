@@ -122,6 +122,126 @@ $status  = $pay->verifyPayment("invoice_number","trx_id"); //this will retrieve 
 </pre>
 
 
+## Step:3 Merchant IPN (Instant Payment Notification)
+
+After every **successful** transaction Paystation posts a server-to-server notification to your IPN url.
+The url is configured per merchant, so you share it with Paystation once - there is no `ipn_url` parameter
+on create-payment. Failed, cancelled and pending transactions are never reported here.
+
+The notification carries **no signature and no authentication** (the gateway documents it as `Auth: None`),
+so anyone who learns your url can post to it. Treat the body as untrusted input.
+
+### Reading the notification
+
+<pre>
+
+use Xenon\Paystation\Ipn\IpnHandler;
+use Xenon\Paystation\Ipn\IpnResponse;
+use Xenon\Paystation\Exception\PaystationIpnException;
+
+require 'vendor/autoload.php';
+
+$handler = new IpnHandler();
+
+try {
+    //reads php://input, or pass the body yourself: $handler->capture($body)
+    $ipn = $handler->capture();
+
+    $order = findOrderByInvoice($ipn->invoiceNumber());
+
+    if (!$order) {
+        //permanently unusable, so acknowledge rather than collect retries
+        IpnResponse::rejected('unknown invoice')->send();
+        return;
+    }
+
+    //trx_status === 'Success' and the amount matches what you initiated
+    $handler->validate($ipn, $order['amount']);
+
+    //idempotency is yours: this is the one documented check the library
+    //cannot do, because it needs your order state
+    if ($order['status'] === 'paid') {
+        IpnResponse::acknowledged()->send();
+        return;
+    }
+
+    markOrderPaid($order, $ipn->trxId(), $ipn->paymentMethod(), $ipn->orderDateTimeString());
+
+    IpnResponse::acknowledged()->send();
+} catch (PaystationIpnException $e) {
+    //the exception knows which status keeps the gateway from retrying
+    IpnResponse::fromException($e)->send();
+}
+</pre>
+
+### Confirming against the gateway
+
+Because the notification is unsigned, the only check that does not rely on trusting the request is asking
+the gateway itself. `confirm()` calls `retrive-transaction` with your own credentials and refuses unless the
+transaction exists, succeeded, and carries the same `trx_id` and amount:
+
+<pre>
+$paystation = new Paystation([
+    'merchantId' => 'xxx',
+    'password' => 'xxxx',
+    'environment' => 'live',
+]);
+
+$handler = new IpnHandler($paystation);
+
+$ipn = $handler->capture();
+$handler->validate($ipn, $order['amount']);
+$handler->confirm($ipn);   //throws PaystationIpnException when not confirmed
+</pre>
+
+It costs one round trip, and the documentation asks for a fast acknowledgement - so either use it where a
+wrong answer is expensive, or acknowledge first and confirm in a background job.
+
+Optionally restrict by source address. Paystation does not publish its sending ips, so ask them for the
+current list first - an out of date allow-list rejects real payments:
+
+<pre>
+$handler->trustIps(['203.0.113.7', '198.51.100.0/24']);
+$handler->validate($ipn, $order['amount'], $_SERVER['REMOTE_ADDR']);
+</pre>
+
+### Notification fields
+
+| Method | Field | Notes |
+|---|---|---|
+| `invoiceNumber()` | `invoice_number` | your order reference, use it to match the order |
+| `trxStatus()` | `trx_status` | always `Success` for this notification |
+| `trxId()` | `trx_id` | gateway transaction id, keep it for reconciliation |
+| `amount()` | `trx_amount` | returned as `float`, in BDT |
+| `orderDateTimeString()` | `order_date_time` | raw, format `Y-m-d H:i:s` |
+| `orderDateTime()` | `order_date_time` | `DateTimeImmutable`, or `null` when unparsable |
+| `paymentMethod()` | `payment_method` | Nagad, bKash, Rocket, Visa, ... |
+| `reference()` | `reference` | optional, `null` when absent |
+| `get()` / `toArray()` | any | including fields this library does not know |
+| `isSuccess()` | - | `trx_status` is `Success`, trimmed and case insensitive |
+| `matchesAmount($expected)` | - | numeric comparison with tolerance, not string equality |
+| `loggable()` | - | the fields worth putting in a log line |
+
+The gateway masks `trx_id` as `****` in the documentation examples; a real notification carries the actual id.
+
+### Answering the gateway
+
+The status code is the whole protocol: Paystation stops on `2xx` and retries on `4xx`, `5xx` and timeouts.
+
+| Helper | Status | Meaning |
+|---|---|---|
+| `IpnResponse::acknowledged()` | 200 | processed, or already processed - no further attempt |
+| `IpnResponse::retry($reason)` | 503 | your side failed, please deliver again |
+| `IpnResponse::rejected($reason)` | 200 | permanently unusable, stop retrying |
+| `IpnResponse::fromException($e)` | from the exception | the status that fits the failure |
+
+`send()` sets the status, the json content type and echoes the body. It deliberately does **not** call `exit`,
+so work you deferred until after acknowledging still runs. In a framework, use `statusCode()` and `body()`
+and build your own response instead.
+
+`rejected()` answers `200` on purpose - a body that can never be processed should not be redelivered for the
+rest of the retry window. Pass a 4xx yourself if you would rather the gateway kept trying.
+
 #### Important Methods
 * setPaymentParams()
 * payNow()
@@ -130,6 +250,7 @@ $status  = $pay->verifyPayment("invoice_number","trx_id"); //this will retrieve 
 * getEnvironment()
 * getBaseUrl()
 * isSandbox()
+* IpnHandler::capture(), validate(), confirm(), trustIps()
 
 This library is still in beta version and if you are interested to contribute this , we highly encourage you. Make a fork of this repository
 and give send a pull request. If you face any issues or error during development or after deployment, you should crate an issue
